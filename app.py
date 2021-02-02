@@ -2,6 +2,10 @@ import os
 import secrets
 from tkinter import Image
 
+import MySQLdb
+from flask_mysqldb import MySQL
+import MySQLdb.cursors
+import re
 import pymysql
 from flask import Flask, render_template, url_for, redirect, session, request
 from flask import Response
@@ -30,8 +34,6 @@ cursor = connection.cursor()
 def home():
 
     return render_template('index.html')
-
-
 
 @app.route('/blog_page', methods=['GET','POST'])
 def blogs():
@@ -80,14 +82,51 @@ def about():
         return render_template("about.html", name=f.filename)
     return render_template('about.html')
 
+@app.route('/login', methods =['GET', 'POST'])
+def login():
+    msg = ' '
+    if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
+        email = request.form['email']
+        password = request.form['password']
+
+        cursor.execute('SELECT * FROM accounts WHERE email = %s AND password = %s', (email, password,))
+        account = cursor.fetchone()
+
+        if account:
+            session['loggedin'] = True
+            session['id'] = account['id']
+            session['username'] = account['username']
+            return 'Logged in successfully!'
+        else:
+            msg = 'Incorrect username/password!'
+    return render_template('login.html', msg=msg)
+
 
 @app.route('/signup', methods =['GET', 'POST'])
 def signup():
-    return render_template('signup.html')
+    msg = ''
+    if request.method == 'POST' and 'name' in request.form and 'email' in request.form and 'password' in request.form and 'phone' in request.form and 'location' in request.form:
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        phone = request.form['phone']
+        location = request.form['location']
+    elif request.method == 'POST':
+        msg = "Please fill registration form "
 
-@app.route('/login', methods =['GET', 'POST'])
-def login():
-    return render_template('login.html')
+    cursor.execute('SELECT * FROM accounts WHERE email = %s', (email,))
+    account = cursor.fetchone()
+
+    if account:
+        msg = "Aleady have an account"
+    else:
+        cursor.execute('INSERT into accounts VALUES (NULL, %s,%s,%s,%s,%s)', (name,email,password,phone,location,))
+        connection.commit()
+
+        msg = "You have successfully registered "
+
+    return render_template('signup.html', msg=msg)
+
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
@@ -104,5 +143,14 @@ def contact():
         return redirect(url_for('contact'))
     return render_template('contact.html')
 
+# @app.route('/login/logout')
+# def logout():
+#     # Remove session data, this will log the user out
+#    session.pop('loggedin', None)
+#    session.pop('id', None)
+#    session.pop('username', None)
+#    # Redirect to login page
+#    return redirect(url_for('login'))
+
 if __name__ == '__main__':
-   app.run(debug = True, port=5051)
+   app.run(debug = True)
