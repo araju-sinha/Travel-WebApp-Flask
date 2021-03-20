@@ -19,7 +19,7 @@ Flask-WTF==0.14.3
 greenlet==0.4.17
 idna==2.10
 itsdangerous==1.1.0
-Jinja2==2.11.2
+Jinja2==2.11.3
 jmespath==0.10.0
 MarkupSafe==1.1.1
 mysqlclient==2.0.1
