@@ -24,7 +24,7 @@ jmespath==0.10.0
 MarkupSafe==1.1.1
 mysqlclient==2.0.1
 orm==0.1.5
-pip==20.2.4
+pip==21.1
 playsound==1.2.2
 pycparser==2.20
 PyMySQL==0.9.3
